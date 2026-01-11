@@ -1,4 +1,4 @@
-##TerraTrace
+## TerraTrace
 
 ## 🚀 The Problem
 The Carbon Credit market is a **$2 Billion industry**, but it's plagued by fraud. "Phantom Forests" — projects that claim to protect trees that were never in danger, or worse, have already been cut down — account for up to **90% of offsets** issued by some major registries.
