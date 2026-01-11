@@ -45,19 +45,37 @@ Manual auditing is slow, expensive, and prone to corruption. We need a **trustle
     ```
 
 3.  **Set up Environment Variables:**
-    Create a `.env.local` file with:
+    Create a `.env.local` file in the root directory. You will need API keys for Mapbox, Supabase, Google Gemini, and a Google Cloud Service Account for Earth Engine.
+    
     ```env
-    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.your_token
-    NEXT_PUBLIC_SUPABASE_URL=your_url
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-    GEMINI_API_KEY=your_gemini_key
-    GOOGLE_APPLICATION_CREDENTIALS_JSON={"your": "service_account"}
+    # Mapbox (Visualization)
+    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.your_token_here
+
+    # Supabase (Database)
+    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+    # Google Gemini (AI Analysis)
+    GEMINI_API_KEY=your_gemini_key_here
+
+    # Google Earth Engine (Geospatial Processing)
+    # Note: You must enable the GEE API in Google Cloud Console
+    GEE_SERVICE_ACCOUNT=your-service-account@project.iam.gserviceaccount.com
+    GEE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
     ```
 
 4.  **Run the development server:**
     ```bash
     npm run dev
     ```
+    Open [http://localhost:3000](http://localhost:3000) with your browser.
+
+## 🏗️ Architecture
+*   `/src/app/api/analyze`: The core logic. Handles GEE initialization, biomass calculation, and Gemini AI prompting.
+*   `/src/app/api/gee/layer`: Generates dynamic map tiles (NDVI, False Color) using GEE's `getMapId`.
+*   `/src/components/Map.tsx`: The main visualization component using Mapbox GL JS.
+*   `/src/lib/gee.ts`: Server-side singleton for Google Earth Engine authentication.
 
 ## 🔮 Future Roadmap
 *   **Blockchain Verification:** Mint audit certificates as NFTs on Celo/Polygon for immutable proof.

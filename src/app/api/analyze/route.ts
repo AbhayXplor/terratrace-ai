@@ -10,6 +10,24 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+/**
+ * POST /api/analyze
+ * 
+ * This endpoint performs a comprehensive environmental audit of a selected region.
+ * It combines Google Earth Engine (GEE) for geospatial analysis with Google Gemini AI
+ * for qualitative interpretation.
+ * 
+ * Workflow:
+ * 1. Initialize GEE server-side.
+ * 2. Define the Region of Interest (ROI) from user geometry or bounds.
+ * 3. Calculate Biomass Loss & Gain using Sentinel-2 satellite imagery (NDVI).
+ * 4. Feed the statistical results into Gemini AI to generate a human-readable audit report.
+ * 5. Estimate Carbon Credits and assign a Risk Score.
+ * 6. Save the audit result to Supabase.
+ * 
+ * @param {Request} request - JSON body containing { lat, lng, bounds, geometry, year, compareYear, leakage }
+ * @returns {NextResponse} - JSON response with the project data or error.
+ */
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -142,17 +160,22 @@ export async function POST(request: Request) {
             
             Return a JSON object with:
             {
-                "location_name": "Specific name of the forest, park, or region (e.g., 'Amazonas Sector 4', 'Saihanba Forest'). Do NOT use generic names like 'Custom Polygon Selection'.",
-                "is_suitable": true/false (True if forest, grassland, wetland, or restoration area. False ONLY if city, ocean, or barren desert with no restoration potential.),
-                "land_cover": "Forest/Grassland/Wetland/Restoration Area/City/etc",
-                "risk_score": 0-100 (Higher score = Higher Risk of Deforestation/Failure. If Gain > Loss, risk should be LOW.),
-                "ai_analysis": "2 sentence professional audit summary. Mention the specific years analyzed. If gain is high, highlight the restoration success."
+                "location_name": "A short, specific name for this exact area (e.g. 'Amazonas Sector 4', 'Saihanba Forest Reserve'). Be creative but realistic.",
+                "is_suitable": true/false,
+                "land_cover": "Forest/Grassland/Wetland/etc",
+                "risk_score": 0-100,
+                "ai_analysis": "2 sentence professional audit summary."
             }
         `;
 
         const aiRes = await model.generateContent(prompt);
         const aiText = aiRes.response.text().replace(/```json|```/g, "").trim();
         const aiData = JSON.parse(aiText);
+
+        // Defensive check: If AI echoes instructions or returns too long a name
+        if (aiData.location_name && aiData.location_name.length > 60) {
+            aiData.location_name = "Analyzed Region " + Math.floor(Math.random() * 1000);
+        }
 
         if (!aiData.is_suitable) {
             return NextResponse.json({

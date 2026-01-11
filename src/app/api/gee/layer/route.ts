@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import ee from '@google/earthengine';
 import { initGEE } from '@/lib/gee';
 
+/**
+ * GET /api/gee/layer
+ * 
+ * Generates a Google Earth Engine map tile URL for the frontend Mapbox layer.
+ * Supports multiple visualization modes:
+ * - 'visual': True Color (Human eye view)
+ * - 'ndvi': Normalized Difference Vegetation Index (Vegetation health)
+ * - 'false-color': Near-Infrared (Highlights biomass density)
+ * 
+ * Also supports 'Change Detection' mode if a compareYear is provided,
+ * highlighting areas of significant biomass loss in red.
+ * 
+ * @param {Request} request - Query params: { year, compareYear, mode }
+ * @returns {NextResponse} - JSON with { url: "https://earthengine.googleapis.com/..." }
+ */
 export async function GET(request: Request) {
     try {
         await initGEE();
